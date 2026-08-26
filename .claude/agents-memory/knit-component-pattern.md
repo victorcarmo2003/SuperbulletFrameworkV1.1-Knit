@@ -13,11 +13,16 @@ contexto factual de como o mecanismo funciona por baixo.
 ## Autoload (mecanismo real, confirmado lendo o pacote Wally)
 
 `init.lua` de um Service/Controller declara `Instance = script`. Quem lê isso é
-`KnitServer.lua`/`KnitClient.lua` dentro de
-`Packages/_Index/superbullet_knit@0.0.1/knit/`, que chama
-`Components.ComponentInitializer.Initialize(service, service.Instance)` (e depois
-`.Start`) pra todo service/controller com `Instance` setado — arquivo real:
-`Packages/_Index/superbullet_knit@0.0.1/knit/Components/ComponentInitializer.lua`.
+`KnitServer.lua`/`KnitClient.lua` dentro do pacote Wally publicado (desde
+2026-08-26, ver [[decisions-log]]), em
+`Packages/_Index/victorcarmo2003_superbullet-knit@0.1.1/superbullet-knit/knit/`,
+que chama `Components.ComponentInitializer.Initialize(service, service.Instance)`
+(e depois `.Start`) pra todo service/controller com `Instance` setado — arquivo
+real: `Packages/_Index/victorcarmo2003_superbullet-knit@0.1.1/superbullet-knit/knit/Components/ComponentInitializer.lua`.
+Repo fonte: `github.com/victorcarmo2003/superbullet-knit`. **Caminho muda a
+cada bump de versão** (`@0.1.1` vira parte do nome da pasta) — conferir
+`framework/wally.toml` pela versão atual antes de assumir esse caminho
+literal.
 
 Existia também um `SharedSource/Utilities/ScriptsLoader/ComponentsInitializer.lua`
 de nome parecido mas **código morto** (confirmado por grep em 2026-08-26, sem
@@ -71,10 +76,19 @@ nenhuma feature. Ao criar um sistema novo, copiar pra dentro de
 
 ## Wrapper Superbullet sobre Knit
 
-`framework/Packages/Superbullet.lua` é um único `require` que reexporta
-`Packages/_Index/superbullet_knit@0.0.1/Superbullet` — o Knit modificado de
+`framework/Packages/Superbullet.lua` é um único `require` que reexporta o
+pacote publicado `victorcarmo2003/superbullet-knit` — o Knit modificado de
 verdade vive dentro desse pacote Wally (`_Index`), não em código solto do
-repo. Se precisar entender o mecanismo interno de
-`CreateService`/`CreateController` (não só como usar), tem que abrir esse
-pacote indexado. `Packages/` fica fora de `framework/src/` (gerenciado pelo
-Wally, mapeado automático pelo Rogen — ver [[rogen-migration-notes]]).
+repo nem vendorizado à mão (era vendor local até 2026-08-26, ver
+[[decisions-log]] pro porquê da mudança). Se precisar entender o mecanismo
+interno de `CreateService`/`CreateController` (não só como usar), tem que
+abrir esse pacote indexado, ou o repo fonte
+`github.com/victorcarmo2003/superbullet-knit`. `Packages/` fica fora de
+`framework/src/` (gerenciado pelo Wally, mapeado automático pelo Rogen — ver
+[[rogen-migration-notes]]).
+
+**Atenção ao editar `framework/wally.toml`:** não declarar `Knit = "sleitnick/
+knit@..."` de novo — já causou um incidente (`wally install` resolveu essa
+entrada literal, baixou Knit vanilla e sobrescreveu o `Packages/Knit.lua`/
+`_Index/` que apontava pro fork, apagando-o do working tree sem commit). A
+única entrada correta é `Superbullet = "victorcarmo2003/superbullet-knit@..."`.

@@ -21,7 +21,12 @@ ModuleScripts comuns.
 - Luau / Roblox, projeto Rojo (`framework/default.project.json` — **gerado**
   por `rogen build`, não editado à mão, ver [[rogen-migration-notes]]).
 - Knit modificado, exposto via `framework/Packages/Superbullet.lua`
-  (`Superbullet.CreateService`/`Superbullet.CreateController`).
+  (`Superbullet.CreateService`/`Superbullet.CreateController`). Desde
+  2026-08-26 é pacote Wally **externo publicado de verdade**
+  (`victorcarmo2003/superbullet-knit`, não mais vendor local) — ver
+  [[knit-component-pattern]] pro caminho atual e [[decisions-log]] pro motivo.
+- UI: Vide (`centau/vide`) + padrão UI Labs (storybook de Studio) — feature
+  `Interface`, ver estrutura abaixo.
 - Dados de jogador: ProfileService + ProfileStore (loleris/MAD STUDIO).
 - Toolchain: `framework/foreman.toml` (selene, wally, luau-lsp, remodel,
   luau-analyze) **e** `framework/rokit.toml` (rogen, rojo) coexistindo —
@@ -40,7 +45,12 @@ framework/
 └── src/
     ├── Bootstrap/{client,server}/       << loaders (SuperbulletServer/Client)
     ├── Profile/{client,server,shared}/  << ProfileService, DataController, ProfileTemplate
-    └── SuperbulletLogger/{client,server,shared}/  << debug bridge, Studio-only
+    ├── SuperbulletLogger/{client,server,shared}/  << debug bridge, Studio-only
+    │   └── shared/Loadstring/           << vendor (Yueliang+Rerubi), NÃO em Packages/ de propósito
+    │       (excluído do lint em selene.toml — ver decisions-log 2026-08-26)
+    └── Interface/client/                << Vide + UI Labs, feature nova (2026-08-26)
+        ├── Elements/                     << componentes Vide (Props -> dismount())
+        └── Story/                        << *.storybook.luau + *.story.luau
 ```
 
 Cada feature tem `client/` (vira `StarterPlayerScripts`), `server/` (vira
