@@ -1,0 +1,25 @@
+{
+	"source": ["src"],
+	"unwrap": true,
+	"luau": {
+		"output": "default.project.json",
+		"build": "src"
+	},
+	"project": {
+		"name": "SuperbulletFrameworkV1-Knit",
+		"tree": {
+			"$className": "DataModel",
+			"ReplicatedStorage": {
+				"$className": "ReplicatedStorage",
+				"$ignoreUnknownInstances": true,
+				"Packages": {
+					"$path": "Packages"
+				}
+			},
+			"ServerScriptService": {
+				"$className": "ServerScriptService",
+				"$ignoreUnknownInstances": true
+			}
+		}
+	}
+}

@@ -1,20 +1,76 @@
 {
-  "name": "SuperbulletFrameworkV1-Knit",
-  "tree": {
-    "$className": "DataModel",
-    "ReplicatedStorage": {
-      "$className": "ReplicatedStorage",
-      "$ignoreUnknownInstances": true,
-      "$path": "src/ReplicatedStorage"
-    },
-    "ServerScriptService": {
-      "$className": "ServerScriptService",
-      "$ignoreUnknownInstances": true,
-      "$path": "src/ServerScriptService"
-    },
-    "StarterPlayer": {
-      "$className": "StarterPlayer",
-      "$ignoreUnknownInstances": true
-    }
-  }
+	"name": "SuperbulletFrameworkV1-Knit",
+	"tree": {
+		"$className": "DataModel",
+		"Lighting": {},
+		"ReplicatedFirst": {},
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"$ignoreUnknownInstances": true,
+			"Packages": {
+				"$path": "Packages"
+			},
+			"Profile": {
+				"$ignoreUnknownInstances": false,
+				"$path": {
+					"optional": "src/Profile/shared"
+				}
+			},
+			"SuperbulletLogger": {
+				"$ignoreUnknownInstances": false,
+				"$path": {
+					"optional": "src/SuperbulletLogger/shared"
+				}
+			}
+		},
+		"RobloxPluginGuiService": {},
+		"ServerScriptService": {
+			"$className": "ServerScriptService",
+			"$ignoreUnknownInstances": true,
+			"Bootstrap": {
+				"$ignoreUnknownInstances": false,
+				"$path": {
+					"optional": "src/Bootstrap/server"
+				}
+			},
+			"Profile": {
+				"$ignoreUnknownInstances": false,
+				"$path": {
+					"optional": "src/Profile/server"
+				}
+			},
+			"SuperbulletLogger": {
+				"$path": {
+					"optional": "src/SuperbulletLogger/server"
+				}
+			}
+		},
+		"ServerStorage": {},
+		"SoundService": {},
+		"StarterGui": {},
+		"StarterPack": {},
+		"StarterPlayer": {
+			"StarterCharacterScripts": {},
+			"StarterPlayerScripts": {
+				"Bootstrap": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Bootstrap/client"
+					}
+				},
+				"Profile": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Profile/client"
+					}
+				},
+				"SuperbulletLogger": {
+					"$path": {
+						"optional": "src/SuperbulletLogger/client"
+					}
+				}
+			}
+		},
+		"Workspace": {}
+	}
 }
