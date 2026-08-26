@@ -1,0 +1,11 @@
+[package]
+name = "victorcarmo2003/superbullet-knit"
+description = "Fork of Sleitnick/Knit with SuperbulletInit/SuperbulletStart lifecycle fallback and automatic Accessor/Mutator/Others component loading via an Instance reference."
+version = "0.1.1"
+license = "MIT"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+Comm = "sleitnick/comm@1.0.1"
+Promise = "evaera/promise@4.0.0"

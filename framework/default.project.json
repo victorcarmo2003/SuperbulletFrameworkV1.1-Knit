@@ -58,6 +58,12 @@
 						"optional": "src/Bootstrap/client"
 					}
 				},
+				"Interface": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Interface/client"
+					}
+				},
 				"Profile": {
 					"$ignoreUnknownInstances": false,
 					"$path": {
