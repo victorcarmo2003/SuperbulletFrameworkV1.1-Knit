@@ -13,12 +13,12 @@ local PREFIX = "[SuperbulletCodeExecutor]"
 -- Client always uses custom Loadstring module (built-in loadstring not available for clients)
 local loadstringFn
 local success, customLoadstring = pcall(function()
-	return require(ReplicatedStorage.Packages.Loadstring)
+	return require(ReplicatedStorage.SuperbulletLogger.Loadstring)
 end)
 if success then
 	loadstringFn = customLoadstring
 else
-	warn(PREFIX, "Client: Loadstring module not found at ReplicatedStorage.Packages.Loadstring")
+	warn(PREFIX, "Client: Loadstring module not found at ReplicatedStorage.SuperbulletLogger.Loadstring")
 	warn(PREFIX, "Client code execution will not be available")
 end
 
@@ -28,7 +28,7 @@ function ClientCodeExecutor.execute(code)
 	if not loadstringFn then
 		return {
 			success = false,
-			error = "Loadstring module not available. Add Loadstring to ReplicatedStorage.Packages.",
+			error = "Loadstring module not available. Add Loadstring to ReplicatedStorage.SuperbulletLogger.",
 		}
 	end
 

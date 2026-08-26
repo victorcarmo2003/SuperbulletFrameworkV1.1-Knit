@@ -24,7 +24,7 @@ if builtinLoadstringEnabled then
 else
 	-- Fallback to custom Loadstring module
 	local success, customLoadstring = pcall(function()
-		return require(ReplicatedStorage.Packages.Loadstring)
+		return require(ReplicatedStorage.SuperbulletLogger.Loadstring)
 	end)
 	if success then
 		loadstringFn = customLoadstring
@@ -32,7 +32,7 @@ else
 		warn(PREFIX, "loadstring() is not available and custom Loadstring module not found!")
 		warn(PREFIX, "To enable code execution, either:")
 		warn(PREFIX, "  1. Set ServerScriptService.LoadStringEnabled = true in Studio (disable in production)")
-		warn(PREFIX, "  2. Add Loadstring module to ReplicatedStorage.Packages")
+		warn(PREFIX, "  2. Add Loadstring module to ReplicatedStorage.SuperbulletLogger")
 	end
 end
 
