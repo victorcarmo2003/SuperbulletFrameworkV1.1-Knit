@@ -22,7 +22,7 @@ function HttpDisabledUI.Create()
 	-- Semi-transparent dark overlay
 	local overlay = Instance.new("Frame")
 	overlay.Name = "Overlay"
-	overlay.Size = UDim2.new(1, 0, 1, 0)
+	overlay.Size = UDim2.fromScale(1, 1)
 	overlay.Position = UDim2.new(0, 0, 0, 0)
 	overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 	overlay.BackgroundTransparency = 0.4
@@ -32,7 +32,7 @@ function HttpDisabledUI.Create()
 	-- Main warning container
 	local container = Instance.new("Frame")
 	container.Name = "Container"
-	container.Size = UDim2.new(0, 500, 0, 400)
+	container.Size = UDim2.fromOffset(500, 400)
 	container.Position = UDim2.new(0.5, -250, 0.5, -200)
 	container.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 	container.BorderSizePixel = 0
@@ -55,7 +55,7 @@ function HttpDisabledUI.Create()
 	-- Warning icon (using text emoji as fallback)
 	local iconLabel = Instance.new("TextLabel")
 	iconLabel.Name = "Icon"
-	iconLabel.Size = UDim2.new(0, 60, 0, 60)
+	iconLabel.Size = UDim2.fromOffset(60, 60)
 	iconLabel.Position = UDim2.new(0.5, -30, 0, 20)
 	iconLabel.BackgroundTransparency = 1
 	iconLabel.Text = "⚠️"
@@ -68,7 +68,7 @@ function HttpDisabledUI.Create()
 	local title = Instance.new("TextLabel")
 	title.Name = "Title"
 	title.Size = UDim2.new(1, -40, 0, 30)
-	title.Position = UDim2.new(0, 20, 0, 85)
+	title.Position = UDim2.fromOffset(20, 85)
 	title.BackgroundTransparency = 1
 	title.Text = "HttpService is Disabled"
 	title.TextSize = 24
@@ -80,7 +80,7 @@ function HttpDisabledUI.Create()
 	local subtitle = Instance.new("TextLabel")
 	subtitle.Name = "Subtitle"
 	subtitle.Size = UDim2.new(1, -40, 0, 20)
-	subtitle.Position = UDim2.new(0, 20, 0, 118)
+	subtitle.Position = UDim2.fromOffset(20, 118)
 	subtitle.BackgroundTransparency = 1
 	subtitle.Text = "Superbullet AI Debugger requires HttpService to be enabled"
 	subtitle.TextSize = 14
@@ -92,7 +92,7 @@ function HttpDisabledUI.Create()
 	local stepsContainer = Instance.new("Frame")
 	stepsContainer.Name = "StepsContainer"
 	stepsContainer.Size = UDim2.new(1, -40, 0, 160)
-	stepsContainer.Position = UDim2.new(0, 20, 0, 150)
+	stepsContainer.Position = UDim2.fromOffset(20, 150)
 	stepsContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
 	stepsContainer.BorderSizePixel = 0
 	stepsContainer.Parent = container
@@ -105,7 +105,7 @@ function HttpDisabledUI.Create()
 	local stepsHeader = Instance.new("TextLabel")
 	stepsHeader.Name = "StepsHeader"
 	stepsHeader.Size = UDim2.new(1, -20, 0, 25)
-	stepsHeader.Position = UDim2.new(0, 10, 0, 10)
+	stepsHeader.Position = UDim2.fromOffset(10, 10)
 	stepsHeader.BackgroundTransparency = 1
 	stepsHeader.Text = "How to Enable HttpService:"
 	stepsHeader.TextSize = 14
@@ -127,7 +127,7 @@ function HttpDisabledUI.Create()
 		local stepLabel = Instance.new("TextLabel")
 		stepLabel.Name = "Step" .. i
 		stepLabel.Size = UDim2.new(1, -20, 0, 22)
-		stepLabel.Position = UDim2.new(0, 10, 0, 30 + (i - 1) * 24)
+		stepLabel.Position = UDim2.fromOffset(10, 30 + (i - 1) * 24)
 		stepLabel.BackgroundTransparency = 1
 		stepLabel.Text = step
 		stepLabel.TextSize = 13
@@ -141,8 +141,8 @@ function HttpDisabledUI.Create()
 	-- Video tutorial section
 	local videoLabel = Instance.new("TextLabel")
 	videoLabel.Name = "VideoLabel"
-	videoLabel.Size = UDim2.new(0, 120, 0, 20)
-	videoLabel.Position = UDim2.new(0, 20, 0, 320)
+	videoLabel.Size = UDim2.fromOffset(120, 20)
+	videoLabel.Position = UDim2.fromOffset(20, 320)
 	videoLabel.BackgroundTransparency = 1
 	videoLabel.Text = "Video Tutorial:"
 	videoLabel.TextSize = 12
@@ -155,7 +155,7 @@ function HttpDisabledUI.Create()
 	local videoUrlBox = Instance.new("TextBox")
 	videoUrlBox.Name = "VideoUrlBox"
 	videoUrlBox.Size = UDim2.new(1, -160, 0, 24)
-	videoUrlBox.Position = UDim2.new(0, 140, 0, 318)
+	videoUrlBox.Position = UDim2.fromOffset(140, 318)
 	videoUrlBox.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
 	videoUrlBox.BorderSizePixel = 0
 	videoUrlBox.Text = "https://youtu.be/uI065F9UaCA"
