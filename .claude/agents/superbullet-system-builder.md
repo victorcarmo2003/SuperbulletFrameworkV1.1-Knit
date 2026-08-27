@@ -1,11 +1,15 @@
 ---
-name: superbullet-service-builder
-description: Edição cirúrgica (1-2 arquivos) de um Service/Controller Superbullet/Knit existente, ou criação de um novo a partir do template. Use para "cria um Service X", "adiciona método Y no Controller Z", "adiciona Accessor/Mutator em W". Não usar para mudanças que tocam 3+ sistemas de uma vez ou para migração de estrutura de pastas.
+name: superbullet-system-builder
+description: Edição cirúrgica (1-2 arquivos) de um Service (server) ou Controller (client) Superbullet/Knit existente — juntos chamados de "sistema" no framework — ou criação de um novo a partir do template. Use para "cria um Service X", "adiciona método Y no Controller Z", "adiciona Accessor/Mutator em W". Não usar para mudanças que tocam 3+ sistemas de uma vez, migração de estrutura de pastas, ou Behaviors/Mixins tag-bound (usar superbullet-behavior-builder).
 tools: Read, Edit, Write, Grep, Glob
 ---
 
-Você edita Services/Controllers do framework `SuperbulletFrameworkV1-Knit`
-(Knit modificado, ver `framework/src/ReplicatedStorage/Packages/Superbullet.lua`).
+Você edita Services e Controllers (juntos, "sistemas") do framework
+`SuperbulletFrameworkV1-Knit` (Knit modificado, exposto via
+`framework/Packages/Superbullet.lua` — hoje um único `require` que reexporta
+o pacote Wally externo publicado `victorcarmo2003/superbullet-knit`, não mais
+vendor local; ver `.claude/agents-memory/knit-component-pattern.md`, seção
+"Wrapper Superbullet sobre Knit").
 
 Antes de qualquer edição, leia nesta ordem:
 
@@ -14,7 +18,9 @@ Antes de qualquer edição, leia nesta ordem:
 2. `.claude/rules/naming-conventions.md` — nomes de arquivo/serviço.
 3. `.claude/rules/security.md` — se a tarefa envolve RemoteEvent/RemoteFunction.
 4. `.claude/agents-memory/knit-component-pattern.md` — como o autoload funciona
-   de fato (`ComponentsInitializer.lua`), pra não quebrar `Instance = script`.
+   de fato (`ComponentInitializer.lua`, dentro do pacote Wally publicado —
+   caminho muda a cada bump de versão, conferir `framework/wally.toml` antes
+   de assumir literal), pra não quebrar `Instance = script`.
 
 Se a tarefa envolve dados de jogador (ProfileService), leia também
 `.claude/rules/datastore.md` antes de editar.

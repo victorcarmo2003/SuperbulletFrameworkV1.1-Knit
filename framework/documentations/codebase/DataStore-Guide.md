@@ -1,5 +1,10 @@
 # Superbullet Project - Data Store System Guide
 
+> **Resumo operacional atual:** para o essencial do dia a dia (os três
+> arquivos, as regras obrigatórias), veja `.claude/rules/datastore.md` — mais
+> curto e mantido em sincronia com o código. Este guia é a referência longa,
+> com exemplos.
+
 ## Overview
 
 The Superbullet project uses a three-layer data store system built on ProfileService library:
@@ -29,7 +34,7 @@ DataController.lua  <--->   ProfileService.lua   <--->  ProfileStore
 
 ## File 1: ProfileTemplate.lua
 
-**Location:** `src/ReplicatedStorage/SharedSource/Datas/ProfileTemplate.lua`
+**Location:** `framework/src/Profile/shared/ProfileTemplate.lua`
 
 ### Purpose
 Defines the default data structure for new player profiles. This is the "schema" that all player data will follow.
@@ -69,7 +74,8 @@ local ProfileTemplate = {
 
 ## File 2: ProfileService.lua (SERVER)
 
-**Location:** `src/ServerScriptService/ServerSource/Server/ProfileService.lua`
+**Location:** `framework/src/Profile/server/ProfileService/init.lua` (leitura em
+`Components/Accessor.lua`, escrita em `Components/Mutator.lua`)
 
 ### Purpose
 Server-side Knit Service that manages player data sessions, handles auto-saving, and provides data access methods.
@@ -182,7 +188,7 @@ end)
 
 ## File 3: DataController.lua (CLIENT)
 
-**Location:** `src/ReplicatedStorage/ClientSource/Client/DataController.lua`
+**Location:** `framework/src/Profile/client/DataController.lua`
 
 ### Purpose
 Client-side Knit Controller that stores local copy of player data and provides methods to access it.
@@ -248,8 +254,8 @@ DataController:RequestToUpdateData()
 
 ```lua
 -- In any client script
-local Knit = require(ReplicatedStorage.Packages.Knit)
-local DataController = Knit.GetController("DataController")
+local Superbullet = require(ReplicatedStorage.Packages.Superbullet)
+local DataController = Superbullet.GetController("DataController")
 
 DataController:WaitUntilProfileLoaded()
 local data = DataController:GetPlayerData()
@@ -262,8 +268,8 @@ print("Player level:", data.Level)
 
 ```lua
 -- In any server script
-local Knit = require(ReplicatedStorage.Packages.Knit)
-local ProfileService = Knit.GetService("ProfileService")
+local Superbullet = require(ReplicatedStorage.Packages.Superbullet)
+local ProfileService = Superbullet.GetService("ProfileService")
 
 local function GiveCoins(player, amount)
     local profile, data = ProfileService:GetProfile(player)
@@ -279,7 +285,7 @@ GiveCoins(player, 100)
 ### Pattern 3: Modifying Nested Data (Server)
 
 ```lua
-local ProfileService = Knit.GetService("ProfileService")
+local ProfileService = Superbullet.GetService("ProfileService")
 
 local function ChangeVolume(player, volumeType, value)
     ProfileService:ChangeData(player, {"Settings", volumeType}, value)
@@ -291,7 +297,7 @@ ChangeVolume(player, "MusicVolume", 0.7)
 ### Pattern 4: Working with Tables (Server)
 
 ```lua
-local ProfileService = Knit.GetService("ProfileService")
+local ProfileService = Superbullet.GetService("ProfileService")
 
 local function AddItemToInventory(player, itemName)
     local profile, data = ProfileService:GetProfile(player)
@@ -310,8 +316,8 @@ AddItemToInventory(player, "Sword")
 ### Pattern 5: Listening to Data Changes (Client)
 
 ```lua
-local Knit = require(ReplicatedStorage.Packages.Knit)
-local ProfileService = Knit.GetService("ProfileService")
+local Superbullet = require(ReplicatedStorage.Packages.Superbullet)
+local ProfileService = Superbullet.GetService("ProfileService")
 
 -- Client can listen to specific data changes
 ProfileService.UpdateSpecificData:Connect(function(redirectories, newValue)
@@ -325,7 +331,7 @@ end)
 ### Pattern 6: Safe Data Access (Server)
 
 ```lua
-local ProfileService = Knit.GetService("ProfileService")
+local ProfileService = Superbullet.GetService("ProfileService")
 
 -- Always check if profile exists
 local function SafeDataOperation(player)
@@ -348,7 +354,7 @@ end
 ### Pattern 7: Listening to Data Changes (Server)
 
 ```lua
-local ProfileService = Knit.GetService("ProfileService")
+local ProfileService = Superbullet.GetService("ProfileService")
 
 -- Server-side data change listener
 ProfileService.UpdateSpecificData:Connect(function(player, redirectories, newValue)
@@ -366,8 +372,8 @@ end)
 ### Pattern 8: Getting Other Player's Data (Client)
 
 ```lua
-local Knit = require(ReplicatedStorage.Packages.Knit)
-local ProfileService = Knit.GetService("ProfileService")
+local Superbullet = require(ReplicatedStorage.Packages.Superbullet)
+local ProfileService = Superbullet.GetService("ProfileService")
 
 -- Get another player's data (e.g., for leaderboard)
 local function GetOtherPlayerCoins(otherPlayer)

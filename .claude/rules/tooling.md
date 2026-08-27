@@ -4,7 +4,8 @@
 
 - `framework/foreman.toml` — `selene` (lint, config em `framework/selene.toml`,
   `std = "roblox"`), `wally` (`framework/wally.toml`/`wally.lock` — deps
-  `Knit`, `Signal`), `luau-lsp`, `luau-analyze`, `remodel`.
+  `Component`, `Superbullet`, `Signal`, `vide`), `luau-lsp`, `luau-analyze`,
+  `remodel`.
 - `framework/rokit.toml` — `rogen` (LDGerrits/rogen) e `rojo`. Adicionado na
   migração para estrutura feature-based (2026-08-26); `foreman.toml`
   propositalmente não foi migrado pra Rokit junto (fora de escopo daquela

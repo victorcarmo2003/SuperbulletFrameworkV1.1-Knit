@@ -7,16 +7,16 @@ When building Roblox games with SuperbulletAI using an Object-Oriented Programmi
 SuperbulletAI follows this organized folder structure for Roblox projects:
 
 ```
-src/
-├── ReplicatedStorage/
-│   ├── ClientSource/
-│   │   └── Client/          << All Client Systems stored here
-│   └── SharedSource/
-│       └── Datas/           << Shared Data/Settings for both client and server
-└── ServerScriptService/
-    └── ServerSource/
-        └── Server/          << All Server Systems stored here
+framework/src/
+├── Bootstrap/{client,server}/                 << loaders — scan for *Service/*Controller/*Behavior modules and require() them
+├── Profile/{client,server,shared}/            << ProfileService (data), DataController, ProfileTemplate
+├── SuperbulletLogger/{client,server,shared}/  << Studio-only debug bridge to the SuperbulletAI desktop app
+├── Interface/client/                          << Vide + UI Labs UI layer (Elements/, Story/)
+├── Behaviors/{client,server}/                 << CollectionService tag-bound components
+└── Mixins/{shared,client,server}/             << shared traits consumed explicitly by Behaviors
 ```
+
+Each feature has `client/` (→ `StarterPlayerScripts`), `server/` (→ `ServerScriptService`) and/or `shared/` (→ `ReplicatedStorage`); Rogen routes each one automatically by folder name — see sections 8 and 10 below for where a given system's code goes within its feature.
 
 ## 2. Modified Knit Framework: Accessor and Mutator Components
 
@@ -118,9 +118,9 @@ SuperbulletAI uses an **automated component loading system** that eliminates man
 
 ```lua
 -- init.lua (Main Service File)
-local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
+local Superbullet = require(game:GetService("ReplicatedStorage").Packages.Superbullet)
 
-local PlayerDataService = Knit.CreateService {
+local PlayerDataService = Superbullet.CreateService {
     Name = "PlayerDataService",
     Client = {},
     Instance = script, -- CRITICAL: This enables automatic component loading
@@ -145,7 +145,7 @@ return PlayerDataService
 
 - `Instance = script` enables automatic component loading
 - Framework automatically loads all components from `Components/` folder
-- All component methods are merged into the parent service
+- **Not a method merge**: `ComponentInitializer` does `Service.Accessor = require(Components/Accessor.lua)` / `Service.Mutator = require(Components/Mutator.lua)` — the whole module becomes a property (`Service.Accessor`, `Service.Mutator`), individual methods are never merged onto the service itself. Calling something is always explicit dot-syntax: `Service.Accessor.GetPlayerLevel(player)`, never `Service:GetPlayerLevel()` as if it were a native method. See `.claude/agents-memory/knit-component-pattern.md`.
 - No manual `require()` calls needed
 - Both `Accessor.lua`/`Mutator.lua` and `Get().lua`/`Set().lua` naming conventions are supported
 
@@ -417,7 +417,7 @@ This guide gives you the foundation - your experimentation will build the expert
 
 ### 8a. Frontend-Only (Client)
 
-**Location:** `src/ReplicatedStorage/ClientSource/Client`
+**Location:** `src/{Feature}/client/`
 
 These are systems that only run on the player's device and handle user interface, input, and visual effects.
 
@@ -439,7 +439,7 @@ These are systems that only run on the player's device and handle user interface
 
 ### 8b. Backend-Only (Server)
 
-**Location:** `src/ServerScriptService/ServerSource/Server`
+**Location:** `src/{Feature}/server/`
 
 These are systems that only run on the server and handle game logic, data persistence, and security-critical operations.
 
@@ -461,7 +461,7 @@ These are systems that only run on the server and handle game logic, data persis
 
 ### 8c. Shared (Both Frontend and Backend)
 
-**Location:** `src/ReplicatedStorage/SharedSource/Datas`
+**Location:** `src/{Feature}/shared/`
 
 These are configurations, constants, and utilities that both client and server need access to.
 
@@ -503,17 +503,17 @@ These are configurations, constants, and utilities that both client and server n
 
 ### 10a. Player Inventory System
 
-**Client-Side (`ClientSource/Client`):**
+**Client-Side (`src/Inventory/client/`):**
 
 - `InventoryController` - Displays UI, handles clicks
 - `InventoryAnimations` - Smooth opening/closing effects
 
-**Server-Side (`ServerSource/Server`):**
+**Server-Side (`src/Inventory/server/`):**
 
 - `InventoryService` - Manages actual inventory data
 - `InventoryDataStore` - Saves/loads inventory from DataStore
 
-**Shared (`SharedSource/Datas`):**
+**Shared (`src/Inventory/shared/`):**
 
 - `ItemConfigurations` - Item stats, descriptions, icons
 - `InventoryTypes` - TypeScript/Luau type definitions

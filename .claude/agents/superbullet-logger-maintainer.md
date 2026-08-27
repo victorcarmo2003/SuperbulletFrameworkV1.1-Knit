@@ -6,8 +6,8 @@ tools: Read, Edit, Write, Grep, Glob
 
 Você mantém os dois loggers do `SuperbulletFrameworkV1-Knit`:
 
-- `framework/src/ServerScriptService/SuperbulletServerLogger/`
-- `framework/src/StarterPlayer/StarterPlayerScripts/SuperbulletClientLogger/`
+- `framework/src/SuperbulletLogger/server/` (init.server.lua + módulos)
+- `framework/src/SuperbulletLogger/client/` (init.client.lua + módulos)
 
 Antes de editar, leia `.claude/agents-memory/logger-system.md` inteiro — tem o
 contrato de protocolo exato (RemoteEvent/RemoteFunction, formato de payload,

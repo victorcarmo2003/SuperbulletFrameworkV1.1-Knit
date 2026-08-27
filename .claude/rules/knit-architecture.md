@@ -2,7 +2,10 @@
 
 Regras obrigatórias para qualquer Service ou Controller criado com
 `Superbullet.CreateService` / `Superbullet.CreateController`
-(`framework/src/ReplicatedStorage/Packages/Superbullet.lua`).
+(`framework/Packages/Superbullet.lua` — hoje um único `require` que reexporta
+o pacote Wally externo publicado `victorcarmo2003/superbullet-knit`, não mais
+vendor local; ver `.claude/agents-memory/knit-component-pattern.md`, seção
+"Wrapper Superbullet sobre Knit").
 
 ## Estrutura de um sistema
 
@@ -25,16 +28,19 @@ sistema novo.
 
 `Instance = script` no `init.lua` é obrigatório para o autoload funcionar. Quem
 carrega os componentes é `Components.ComponentInitializer` **dentro do pacote
-Wally** `Packages/_Index/superbullet_knit@0.0.1/knit/Components/ComponentInitializer.lua`
-— chamado automaticamente por `KnitServer`/`KnitClient` pra todo serviço/controller
-que tenha `Instance` setado. Sem `Instance = script`, os componentes nunca são
-carregados.
+Wally publicado** (`Packages/_Index/victorcarmo2003_superbullet-knit@<versão>/
+superbullet-knit/knit/Components/ComponentInitializer.lua`) — chamado
+automaticamente por `KnitServer`/`KnitClient` pra todo serviço/controller que
+tenha `Instance` setado. Sem `Instance = script`, os componentes nunca são
+carregados. **O caminho muda a cada bump de versão** (a versão vira parte do
+nome da pasta) — conferir `framework/wally.toml` pela versão atual antes de
+assumir esse caminho literal.
 
-**Atenção:** existe também um arquivo
+**Nota histórica:** existiu um arquivo
 `framework/src/ReplicatedStorage/SharedSource/Utilities/ScriptsLoader/ComponentsInitializer.lua`
-com nome parecido — esse é **código morto**, não é `require`-ado por nada no
-repo (confirmado por grep). Não é ele quem faz o autoload. Não editar esperando
-efeito no autoload real.
+com nome parecido, mas era código morto (nunca `require`-ado por nada no
+repo). Foi apagado na migração pra Rogen (2026-08-26, ver
+`.claude/agents-memory/decisions-log.md`) — não existe mais no repo.
 
 ### O que o `ComponentInitializer.Initialize` real faz (importante — não é merge de métodos)
 

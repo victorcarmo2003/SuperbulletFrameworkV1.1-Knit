@@ -50,7 +50,10 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 local module = {}
 
 ---- Utilities
-local utilsFolder = ReplicatedStorage.SharedSource.Utilities
+-- Shared helpers hoje vivem dentro da própria feature (shared/), expostos
+-- como ReplicatedStorage.<Feature>.<Modulo> — não existe mais uma pasta
+-- Utilities genérica única. Ex.: local ProfileTemplate =
+-- require(ReplicatedStorage.Profile.ProfileTemplate)
 
 
 ---- Superbullet Services -- [AI NOTE] Declare variables here, assign in Init() via Superbullet.GetService()
