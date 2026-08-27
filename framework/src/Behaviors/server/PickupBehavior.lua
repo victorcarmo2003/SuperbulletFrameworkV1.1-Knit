@@ -7,7 +7,7 @@ local PickupBehavior = Component.new({
 })
 
 function PickupBehavior:Construct()
-	-- Sem yield aqui — mesma regra do SuperbulletInit/Construct do Knit.
+	-- No yield here — same rule as SuperbulletInit/Construct in Knit.
 	self.Collected = false
 end
 
@@ -19,7 +19,7 @@ function PickupBehavior:Start()
 			return
 		end
 		self.Collected = true
-		print(("[PickupBehavior] %s coletado por %s"):format(self.Instance.Name, player.Name))
+		print(("[PickupBehavior] %s collected by %s"):format(self.Instance.Name, player.Name))
 	end)
 end
 
