@@ -6,3 +6,5 @@
 [tools]
 rogen = "LDGerrits/rogen@1.4.4"
 rojo = "rojo-rbx/rojo@7.7.0"
+lune = "lune-org/lune@0.10.5"
+selene = "Kampfkarren/selene@0.31.0"

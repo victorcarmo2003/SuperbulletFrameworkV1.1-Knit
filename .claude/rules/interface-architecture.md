@@ -32,29 +32,6 @@ estáticos e/ou getters reativos — funções `() -> T`), monta via
 devolve. Sem estado interno — quem chama é dono do estado (mesma disciplina
 de "state tem um dono só" que o resto do framework já segue).
 
-```lua
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local vide = require(ReplicatedStorage.Packages.vide)
-local create = vide.create
-
-export type Props = {
-	Parent: Instance,
-	Progress: () -> number, -- 0 a 1
-}
-
-return function(props: Props): () -> ()
-	return vide.mount(function()
-		return create "Frame" {
-			Name = "ProgressBar",
-			Parent = props.Parent,
-			Size = function()
-				return UDim2.fromScale(math.clamp(props.Progress(), 0, 1), 1)
-			end,
-		}
-	end)
-end
-```
-
 Exemplo real: `framework/src/Interface/client/Elements/ProgressBar.luau`.
 
 ## UI Labs (storybook)
@@ -77,5 +54,4 @@ funções anônimas em cima desse getter (`Size = function() return
 UDim2.fromScale(props.Progress(), 1) end`). `vide.spring()` pra transição
 suave, `vide.indexes()` pra listas reativas. Sem mixin/composição própria
 aqui — se um componente precisar de lógica compartilhada com outro, extrair
-função Lua comum, não criar engine de composição (mesma filosofia de "pouca
-mágica" do resto do framework).
+função Lua comum, não criar engine de composição.

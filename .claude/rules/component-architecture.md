@@ -53,23 +53,7 @@ Mesma regra do `SuperbulletInit`/`KnitInit` (`knit-architecture.md`):
 qualquer coisa que bloqueie. Trabalho assíncrono (conectar evento, usar
 Mixin, I/O) vai em `Start()`; cleanup vai em `Stop()`.
 
-```lua
-local Component = require(ReplicatedStorage.Packages.Component)
-
-local MyBehavior = Component.new({ Tag = "MyTag" })
-
-function MyBehavior:Construct()
-	-- síncrono só
-end
-
-function MyBehavior:Start()
-	-- assíncrono, conectar eventos, usar Mixin
-end
-
-function MyBehavior:Stop()
-	-- desconectar tudo que Start conectou
-end
-```
+Exemplo real: `framework/src/Behaviors/server/PickupBehavior.lua`.
 
 ## Convenção de nome de Tag
 
@@ -87,31 +71,17 @@ primeiro argumento, chamada a mão no ciclo de vida do próprio Behavior.
 que `Accessor.lua`/`Mutator.lua`/`Others/*.lua` já usam (nunca merge
 automático no parent, sempre `Service.Accessor.Algo(...)` explícito).
 
-```lua
--- Mixins/shared/PromptMixin.lua
-function PromptMixin.Attach(behavior, options)
-	local prompt = Instance.new("ProximityPrompt")
-	-- ...
-	behavior._promptMixin = { Prompt = prompt } -- estado namespaced
-	return prompt
-end
-
--- Behaviors/server/PickupBehavior.lua
-function PickupBehavior:Construct()
-	PromptMixin.Attach(self, { ActionText = "Pick Up" })
-end
-```
+Exemplo real: `framework/src/Mixins/shared/PromptMixin.lua` (definição) +
+`framework/src/Behaviors/server/PickupBehavior.lua` (consumidor).
 
 Estado do mixin sempre fica namespaced (`self._promptMixin`, prefixo do
 nome do mixin) — nunca solto direto em `self`, pra não colidir com campo do
 próprio Behavior ou de outro mixin.
 
-**Por que não usar `Extensions` da lib `sleitnick/component`**: são hooks
-tipo AOP de ciclo de vida (`ShouldConstruct`/`Constructing`/`Starting`/
-`Stopping`/etc — interceptam/decoram UMA classe), não injeção de método
-compartilhado entre domínios diferentes. Servem pra outra coisa (ex.:
-logging, validação, guard clause condicional), não pra reuso de trait tipo
-`PromptMixin`.
+**Por que não usar `Extensions` da lib `sleitnick/component`**: são hooks de
+ciclo de vida tipo AOP numa classe só (`ShouldConstruct`/`Constructing`/etc).
+Mixin é trait compartilhado entre domínios diferentes — mecanismo distinto,
+não serve pra reuso de trait tipo `PromptMixin`.
 
 ## `GetComponent` vs Mixin — não confundir
 

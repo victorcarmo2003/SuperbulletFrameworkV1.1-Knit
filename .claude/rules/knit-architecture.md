@@ -36,34 +36,19 @@ carregados. **O caminho muda a cada bump de versão** (a versão vira parte do
 nome da pasta) — conferir `framework/wally.toml` pela versão atual antes de
 assumir esse caminho literal.
 
-**Nota histórica:** existiu um arquivo
-`framework/src/ReplicatedStorage/SharedSource/Utilities/ScriptsLoader/ComponentsInitializer.lua`
-com nome parecido, mas era código morto (nunca `require`-ado por nada no
-repo). Foi apagado na migração pra Rogen (2026-08-26, ver
-`.claude/agents-memory/decisions-log.md`) — não existe mais no repo.
+### Uso correto: `Service.Accessor.Foo(...)`, nunca merge de método
 
-### O que o `ComponentInitializer.Initialize` real faz (importante — não é merge de métodos)
-
-- `Service.Accessor = require(Components/Accessor.lua)` — expõe o **módulo
-  inteiro** como propriedade `Accessor` do service/controller. Alias de
-  retrocompat: `Service.GetComponent` aponta pro mesmo módulo.
-- `Service.Mutator = require(Components/Mutator.lua)` — idem, alias
-  `Service.SetComponent`.
-- `Service.Components[NomeDoArquivo] = require(...)` para cada `ModuleScript`
-  dentro de `Components/Others/` (achatado, mesmo se estiver em subpasta).
-- Chama `.Init()` de **todo** módulo dentro de `Components/` (Accessor, Mutator,
-  Others), **sem passar `self`/argumento nenhum** — os componentes usam dot
-  syntax (`module.FunctionName()`), não colon syntax, exceto quando o próprio
-  módulo implementa seu próprio objeto OOP com `.new()`.
-- Não existe merge automático de método individual no service (ex.: chamar
-  `Service:GetPlayerLevel()` direto não funciona só por existir em
-  `Accessor.lua`). Pra chamar, é sempre via `Service.Accessor.GetPlayerLevel(player)`
-  (de dentro do `init.lua`) ou, como qualquer outro sistema também enxerga essa
-  propriedade, `OutroSistema.Accessor.Algo(...)` também é tecnicamente possível
-  — a matriz de comunicação abaixo é **convenção de arquitetura obrigatória**,
-  não uma restrição técnica do framework. Nada no `ComponentInitializer` impede
-  um módulo de dar `require` direto em outro; a disciplina é responsabilidade
-  de quem escreve o código.
+Chamar algo de um componente é sempre via dot syntax explícito
+(`Service.Accessor.GetPlayerLevel(player)`, `Service.Mutator.SetX(...)`) —
+nunca `Service:Foo()` direto esperando merge automático de método individual
+no service. `.Init()`/`.Start()` de cada componente (Accessor, Mutator,
+Others) é chamado sem receber `self`/argumento nenhum. A matriz de
+comunicação abaixo é **convenção de arquitetura obrigatória**, não uma
+restrição técnica — nada impede tecnicamente um `require` direto fora dela,
+a disciplina é responsabilidade de quem escreve o código. Ver
+`.claude/agents-memory/knit-component-pattern.md` (seção "Wrapper
+Superbullet sobre Knit") pro mecanismo interno completo do
+`ComponentInitializer`, incluindo path do pacote publicado.
 
 ## Aliases legados (manter funcionando, não usar em código novo)
 
@@ -84,6 +69,9 @@ repo). Foi apagado na migração pra Rogen (2026-08-26, ver
   passa pelo `init.lua` do sistema.
 - `Others/*.lua` só fala com o sistema pai (`init.lua`). Não chama outro sistema
   nem outro `Others/` diretamente, nem mesmo do mesmo sistema.
+- Verificado estaticamente por `framework/scripts/check-architecture.luau` (ver
+  `.claude/rules/tooling.md`) — falha com exit code não-zero se um `require()`
+  violar a matriz.
 
 ## Ciclo de vida — regra de ouro: Init nunca faz yield
 
