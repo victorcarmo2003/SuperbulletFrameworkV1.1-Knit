@@ -1,4 +1,3 @@
-<img width="676" height="598" alt="image" src="https://github.com/user-attachments/assets/e5dd02a8-6fe8-432c-9ab6-e5f45e52cb13" /># SuperbulletFrameworkV1-Knit
 
 https://victorcarmo2003.github.io/SuperbulletFrameworkV1.1-Knit/
 _A clean, opinionated wrapper over Knit with beginner-friendly error handling, and structure_
