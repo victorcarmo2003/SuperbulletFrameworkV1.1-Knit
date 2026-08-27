@@ -19,6 +19,11 @@ Leia as regras relevantes em `.claude/rules/` primeiro:
 - [`knit-architecture.md`](.claude/rules/knit-architecture.md) — padrão de
   componentes (Accessor/Mutator/Others), ciclo de vida Init/Start, regra das 300
   linhas.
+- [`component-architecture.md`](.claude/rules/component-architecture.md) —
+  componente tag-bound via CollectionService (Behaviors) + Mixin, diferente
+  do padrão Service/Controller acima.
+- [`interface-architecture.md`](.claude/rules/interface-architecture.md) —
+  padrão de UI reativa (Vide + UI Labs), Elements/Story.
 - [`security.md`](.claude/rules/security.md) — o que nunca confiar vindo do
   client.
 - [`naming-conventions.md`](.claude/rules/naming-conventions.md) — convenções de
@@ -37,7 +42,16 @@ o repositório inteiro toda sessão.
 
 ## Subagentes disponíveis
 
-Em `.claude/agents/`: `superbullet-service-builder`, `superbullet-investigator`,
+Em `.claude/agents/`: `superbullet-system-builder` (Service/Controller),
+`superbullet-behavior-builder` (Behaviors/Mixins tag-bound),
+`superbullet-ui-builder` (Vide/UI Labs), `superbullet-investigator`,
 `superbullet-architecture-reviewer`, `superbullet-logger-maintainer`,
-`rogen-migration-planner`. Use o mais específico para a tarefa em vez de fazer tudo
-inline — cada um já sabe quais `rules/` e `agents-memory/` ler primeiro.
+`rogen-migration-planner`. Use o mais específico para a tarefa em vez de
+fazer tudo inline — cada um já sabe quais `rules/` e `agents-memory/` ler
+primeiro.
+
+## Antes de considerar uma mudança pronta
+
+Rode `/review` — roda o `superbullet-architecture-reviewer` no diff atual
+(ou branch/PR/arquivo passado como argumento). Sempre usar antes de dar uma
+mudança de framework por concluída.
