@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superbullet Framework Guide</title>
+<meta name="description" content="A beginner-friendly walkthrough of how the SuperbulletFrameworkV1-Knit Roblox framework is organized and how its pieces fit together.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' font-size='90'%3E%3Ctext y='.9em'%3E%F0%9F%A7%B6%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper: #f4f5f8;
+    --paper-raised: #ffffff;
+    --ink: #161a24;
+    --ink-soft: #4a5062;
+    --line: #d7dbe3;
+    --brand: #37437a;
+    --brand-soft: #eceef8;
+    --server: #0e8f79;
+    --server-soft: #e3f5f1;
+    --client: #c96a06;
+    --client-soft: #fbeedd;
+    --ok: #0e8f79;
+    --danger: #b3401f;
+    --danger-soft: #fbeae4;
+    --code-bg: #eef0f5;
+    --shadow: 0 1px 2px rgba(22, 26, 36, 0.06), 0 8px 24px rgba(22, 26, 36, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #10131b;
+      --paper-raised: #171b26;
+      --ink: #e7e9ef;
+      --ink-soft: #a7adbd;
+      --line: #2a3040;
+      --brand: #97a3e0;
+      --brand-soft: #1c2140;
+      --server: #3fcbac;
+      --server-soft: #123430;
+      --client: #f0a959;
+      --client-soft: #3a2812;
+      --ok: #3fcbac;
+      --danger: #ef8161;
+      --danger-soft: #3a1e17;
+      --code-bg: #1a1f2c;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #10131b;
+    --paper-raised: #171b26;
+    --ink: #e7e9ef;
+    --ink-soft: #a7adbd;
+    --line: #2a3040;
+    --brand: #97a3e0;
+    --brand-soft: #1c2140;
+    --server: #3fcbac;
+    --server-soft: #123430;
+    --client: #f0a959;
+    --client-soft: #3a2812;
+    --ok: #3fcbac;
+    --danger: #ef8161;
+    --danger-soft: #3a1e17;
+    --code-bg: #1a1f2c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--brand); }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+  }
+
+  h1, h2, h3 {
+    font-family: "Newsreader", ui-serif, Georgia, serif;
+    font-weight: 600;
+    text-wrap: balance;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+
+  code {
+    background: var(--code-bg);
+    padding: 0.12em 0.4em;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- shell layout ---------- */
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    padding: 2.75rem 0 2.25rem;
+  }
+
+  .masthead .eyebrow { margin-bottom: 0.9rem; }
+
+  .masthead h1 {
+    font-size: clamp(2rem, 4.5vw, 2.9rem);
+    margin: 0 0 0.9rem;
+  }
+
+  .masthead p {
+    max-width: 62ch;
+    color: var(--ink-soft);
+    font-size: 1.08rem;
+    margin: 0;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 3.5rem;
+    padding: 2.75rem 0 5rem;
+    align-items: start;
+  }
+
+  .toc-desktop {
+    position: sticky;
+    top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    border-right: 1px solid var(--line);
+    padding-right: 1.25rem;
+  }
+
+  .toc-desktop a {
+    display: block;
+    padding: 0.4rem 0;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.92rem;
+    border-left: 2px solid transparent;
+    padding-left: 0.75rem;
+    margin-left: -0.77rem;
+  }
+
+  .toc-desktop a:hover { color: var(--ink); border-left-color: var(--line); }
+
+  .toc-mobile { display: none; }
+
+  main { min-width: 0; }
+
+  section {
+    padding-top: 3.25rem;
+    margin-top: -1.5rem;
+  }
+
+  section:first-child { padding-top: 0; margin-top: 0; }
+
+  section h2 {
+    font-size: 1.7rem;
+    margin: 0 0 0.3rem;
+  }
+
+  section .section-kicker {
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+
+  section > p, section > ul, section > ol {
+    max-width: 68ch;
+  }
+
+  p { margin: 0 0 1rem; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: 0.4rem; }
+
+  .lede {
+    font-size: 1.08rem;
+    color: var(--ink-soft);
+  }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 3.25rem 0 0;
+  }
+
+  /* ---------- reusable pieces ---------- */
+
+  .callout {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
+    margin: 1.4rem 0;
+    box-shadow: var(--shadow);
+    max-width: 68ch;
+  }
+
+  .callout .callout-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brand);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .callout p:last-child { margin-bottom: 0; }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    max-width: 68ch;
+  }
+
+  .realm-card {
+    border-radius: 6px;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--line);
+  }
+
+  .realm-card.server { background: var(--server-soft); border-color: color-mix(in srgb, var(--server) 35%, var(--line)); }
+  .realm-card.client { background: var(--client-soft); border-color: color-mix(in srgb, var(--client) 35%, var(--line)); }
+
+  .realm-card .realm-title {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+
+  .realm-card.server .realm-title { color: var(--server); }
+  .realm-card.client .realm-title { color: var(--client); }
+
+  .realm-card ul { padding-left: 1.1rem; margin-bottom: 0; }
+  .realm-card li { margin-bottom: 0.5rem; font-size: 0.95rem; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 68ch;
+    margin: 1.4rem 0;
+    font-size: 0.94rem;
+  }
+
+  caption {
+    text-align: left;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 0.5rem;
+  }
+
+  th, td {
+    border-bottom: 1px solid var(--line);
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  .pill {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.76rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+
+  .pill.ok { background: var(--server-soft); color: var(--ok); }
+  .pill.no { background: var(--danger-soft); color: var(--danger); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    max-width: 68ch;
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+
+  pre code { background: none; padding: 0; }
+
+  .tree {
+    color: var(--ink-soft);
+  }
+  .tree .name { color: var(--ink); }
+  .tree .note { color: var(--ink-soft); }
+
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1rem;
+    margin: 1.4rem 0;
+  }
+
+  .glossary dt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--brand);
+    margin-bottom: 0.3rem;
+  }
+
+  .glossary dd {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 2rem 0 3rem;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; gap: 1.5rem; padding-top: 1.5rem; }
+    .toc-desktop { display: none; }
+    .toc-mobile {
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--paper-raised);
+      padding: 0.2rem 1rem;
+    }
+    .toc-mobile summary {
+      cursor: pointer;
+      padding: 0.7rem 0;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .toc-mobile ul { list-style: none; padding: 0 0 0.8rem; margin: 0; }
+    .toc-mobile a { color: var(--ink); text-decoration: none; display: block; padding: 0.35rem 0; }
+    .split { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+  }
+
+  html { scroll-behavior: smooth; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="shell">
+  <header class="masthead">
+    <span class="eyebrow">A plain-English walkthrough · no coding background required</span>
+    <h1>The Superbullet Framework, from zero</h1>
+    <p class="lede">
+      This page explains how <strong>SuperbulletFrameworkV1-Knit</strong> is built and why it looks the way
+      it does — assuming you've never opened Roblox Studio or written a line of code. Read it top to bottom,
+      or jump to a section from the list on the side.
+    </p>
+  </header>
+
+  <div class="layout">
+    <nav class="toc-desktop" aria-label="Table of contents">
+      <a href="#start">Before we start</a>
+      <a href="#knit">What is Knit?</a>
+      <a href="#superbullet">Why this fork exists</a>
+      <a href="#systems">Services &amp; Controllers</a>
+      <a href="#behaviors">Behaviors &amp; Mixins</a>
+      <a href="#interface">The Interface layer</a>
+      <a href="#data">Player data</a>
+      <a href="#security">Security basics</a>
+      <a href="#logger">The AI debug bridge</a>
+      <a href="#map">Folder map</a>
+      <a href="#tools">The toolchain</a>
+      <a href="#glossary">Glossary</a>
+    </nav>
+
+    <main>
+      <details class="toc-mobile">
+        <summary>Table of contents</summary>
+        <ul>
+          <li><a href="#start">Before we start</a></li>
+          <li><a href="#knit">What is Knit?</a></li>
+          <li><a href="#superbullet">Why this fork exists</a></li>
+          <li><a href="#systems">Services &amp; Controllers</a></li>
+          <li><a href="#behaviors">Behaviors &amp; Mixins</a></li>
+          <li><a href="#interface">The Interface layer</a></li>
+          <li><a href="#data">Player data</a></li>
+          <li><a href="#security">Security basics</a></li>
+          <li><a href="#logger">The AI debug bridge</a></li>
+          <li><a href="#map">Folder map</a></li>
+          <li><a href="#tools">The toolchain</a></li>
+          <li><a href="#glossary">Glossary</a></li>
+        </ul>
+      </details>
+
+      <section id="start">
+        <span class="eyebrow section-kicker">01 — Foundations</span>
+        <h2>Before we start: how a Roblox game is actually built</h2>
+        <p>
+          A Roblox game is a collection of <strong>scripts</strong> — small programs, written in a language
+          called <strong>Luau</strong> — attached to a 3D world. When someone plays the game, two very
+          different copies of it run at once:
+        </p>
+        <div class="split">
+          <div class="realm-card server">
+            <span class="realm-title">The Server</span>
+            <ul>
+              <li>Runs on a computer owned by Roblox, not the player.</li>
+              <li>One single copy, shared by everyone in that game session.</li>
+              <li>Nobody can see its code or tamper with it while playing.</li>
+              <li>This is where the game decides what's <em>actually true</em> — health, currency, inventory.</li>
+            </ul>
+          </div>
+          <div class="realm-card client">
+            <span class="realm-title">The Client</span>
+            <ul>
+              <li>Runs on each player's own device.</li>
+              <li>One copy per player — what they see, hear, and click.</li>
+              <li>A player with cheat software can freely read and rewrite this copy.</li>
+              <li>It only ever <em>asks</em> the server for things; it can't be trusted to decide them.</li>
+            </ul>
+          </div>
+        </div>
+        <p>
+          Keep that split in your head — server decides, client displays and asks — because almost every
+          rule in this framework exists to protect it. You'll see it again in
+          <a href="#security">Security basics</a>.
+        </p>
+      </section>
+
+      <section id="knit">
+        <span class="eyebrow section-kicker">02 — Origins</span>
+        <h2>What is Knit?</h2>
+        <p>
+          <a href="https://github.com/Sleitnick/Knit" target="_blank" rel="noopener">Knit</a> is a widely-used
+          open-source library that gives Roblox scripts a consistent shape. Instead of every script inventing
+          its own way of organizing code, Knit defines two building blocks:
+        </p>
+        <ul>
+          <li><strong>Service</strong> — a piece of server-side logic with a name, like <code>ShopService</code> or <code>QuestService</code>.</li>
+          <li><strong>Controller</strong> — the client-side counterpart, like <code>DataController</code>.</li>
+        </ul>
+        <p>
+          Knit also gives services and controllers a predictable startup sequence and an easy way to talk to
+          each other and to the other realm (server ↔ client), instead of everyone wiring up
+          <code>RemoteEvent</code>s by hand.
+        </p>
+      </section>
+
+      <section id="superbullet">
+        <span class="eyebrow section-kicker">03 — This project</span>
+        <h2>Why Superbullet forked Knit</h2>
+        <p>
+          <strong>SuperbulletFrameworkV1-Knit</strong> takes Knit and wraps it with stricter, more predictable
+          rules on top. The goal stated in this project is to be <strong>beginner-friendly</strong> and to be
+          operable mainly by an AI trained on it (an internal tool called <strong>SuperbulletAI</strong>).
+          Two priorities follow from that:
+        </p>
+        <div class="callout">
+          <span class="callout-label">Design priority</span>
+          <p><strong>Clarity over elegance.</strong> Errors that teach, patterns that are predictable, as
+          little framework "magic" as possible — so both a human beginner and an AI reading the code can
+          guess correctly what a piece of code does before running it.</p>
+        </div>
+        <p>
+          In code terms, that means: a fixed folder shape for every system, a strict rule about which files
+          are allowed to talk to which, and a hard line never to skip when writing something a player's device
+          could exploit. The rest of this page walks through each of those rules.
+        </p>
+      </section>
+
+      <section id="systems">
+        <span class="eyebrow section-kicker">04 — Core pattern</span>
+        <h2>Services &amp; Controllers: the anatomy of a system</h2>
+        <p>
+          Every Service or Controller — together just called a <strong>system</strong> here — starts as one
+          file, <code>init.lua</code>. If it grows past roughly 300 lines, its logic gets split into three
+          kinds of helper files sitting in a <code>Components/</code> folder next to it:
+        </p>
+        <pre><code>ShopService/
+├── init.lua          <span class="tree note">← the system itself, always runs first</span>
+└── Components/
+    ├── Accessor.lua  <span class="tree note">← read-only: "give me the price of item X"</span>
+    ├── Mutator.lua   <span class="tree note">← write: "give this player item X"</span>
+    └── Others/
+        └── DiscountCalculator.lua</code></pre>
+        <p>
+          A small system (under ~100 lines, simple reads/writes) skips this split entirely — the folder
+          structure is overhead you only pay for once a system is actually big enough to need it.
+        </p>
+        <p>
+          The one rule that's checked automatically, on every save, is <strong>who is allowed to call
+          whom</strong>:
+        </p>
+        <table>
+          <caption>Communication matrix</caption>
+          <thead>
+            <tr><th>From</th><th>Accessor</th><th>Mutator</th><th>Others</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Accessor.lua</td><td>—</td><td><span class="pill no">blocked</span></td><td><span class="pill ok">allowed</span></td></tr>
+            <tr><td>Mutator.lua</td><td><span class="pill no">blocked</span></td><td>—</td><td><span class="pill ok">allowed</span></td></tr>
+            <tr><td>Others/*.lua</td><td colspan="3"><span class="pill no">only through init.lua</span>, never sideways</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Reads and writes never call each other directly — if a read needs to trigger a write, that decision
+          is made by <code>init.lua</code>, the one file allowed to talk to everyone. A script
+          (<code>check-architecture.luau</code>) scans the whole codebase and fails loudly if a file breaks
+          this rule.
+        </p>
+        <div class="callout">
+          <span class="callout-label">Golden rule of startup</span>
+          <p>
+            The function that runs first on any system, <code>Init</code>, is <strong>never allowed to
+            wait for anything</strong> — no pausing for an asset to load, no pausing for a network call. If it
+            did, it would freeze the startup of the entire game for every other system too. Anything that
+            needs to wait belongs in the function that runs second, <code>Start</code>.
+          </p>
+        </div>
+      </section>
+
+      <section id="behaviors">
+        <span class="eyebrow section-kicker">05 — A second pattern</span>
+        <h2>Behaviors &amp; Mixins: code attached to objects</h2>
+        <p>
+          Services and Controllers are singular — one <code>ShopService</code> for the whole game. But some
+          logic needs to run on <em>every object of a certain kind</em> scattered around the 3D world: every
+          pickup, every door, every damage zone. For that, the framework uses a second, different pattern
+          called a <strong>Behavior</strong>.
+        </p>
+        <p>
+          A game designer marks any object in the world with a <strong>Tag</strong> — a plain text label like
+          <code>"Pickup"</code> — using Roblox Studio's built-in Tag Editor, no code required. A matching
+          <code>PickupBehavior.lua</code> file then automatically attaches its logic to every object carrying
+          that tag, however many there are.
+        </p>
+        <p>
+          When two unrelated Behaviors need to share some logic (say, both a pickup and a door need to show a
+          floating "Press E" prompt), that shared piece lives in a <strong>Mixin</strong> — a plain helper
+          table, called explicitly, never merged in automatically.
+        </p>
+      </section>
+
+      <section id="interface">
+        <span class="eyebrow section-kicker">06 — What players see</span>
+        <h2>The Interface layer</h2>
+        <p>
+          On-screen menus, health bars, and buttons are built with <strong>Vide</strong>, a reactive UI
+          library. "Reactive" means a component is written once as a function of its current data, and the
+          screen updates itself automatically whenever that data changes — nobody manually writes
+          "now redraw the health bar."
+        </p>
+        <p>
+          Components are previewed in isolation using a Roblox Studio plugin called <strong>UI Labs</strong>,
+          so a designer can tweak how a progress bar looks without needing a full game session running.
+        </p>
+      </section>
+
+      <section id="data">
+        <span class="eyebrow section-kicker">07 — Persistence</span>
+        <h2>Player data: how progress is saved</h2>
+        <p>
+          Anything that must survive a player leaving and coming back — level, currency, inventory — is
+          called their <strong>profile</strong>, saved through a library called ProfileService. Three rules
+          protect it from corruption:
+        </p>
+        <ol>
+          <li>Code never edits saved data directly — it always goes through one function that logs the
+            change and knows how to detect it.</li>
+          <li>Adding a brand-new field (say, a new setting) is done in one template file first; every existing
+            player's save file is then automatically patched to include it.</li>
+          <li>A player's own device can only <em>read</em> their data, never write it — every change is
+            requested from the server and validated there. See the next section for why.</li>
+        </ol>
+      </section>
+
+      <section id="security">
+        <span class="eyebrow section-kicker">08 — The rule that can't bend</span>
+        <h2>Security basics: never trust the client</h2>
+        <p>
+          Recall the split from the top of this page: a player's device can be freely rewritten by cheat
+          tools. So any message that arrives from a client is treated as something a stranger typed, not as
+          fact — no matter how the request looks in the original code.
+        </p>
+        <div class="split">
+          <div class="realm-card client" style="border-color: var(--danger); background: var(--danger-soft);">
+            <span class="realm-title" style="color: var(--danger);">Never do this</span>
+            <p style="margin: 0; font-size: 0.95rem;">Client sends a number: <code>AddPoints:Fire(99999)</code><br>— an exploiter can send any number they like.</p>
+          </div>
+          <div class="realm-card server">
+            <span class="realm-title">Do this instead</span>
+            <p style="margin: 0; font-size: 0.95rem;">Client sends an intention: <code>TurnInQuest:Fire(questId)</code><br>— the server looks up the quest and decides the reward itself.</p>
+          </div>
+        </div>
+        <p>
+          In short: a client is only ever allowed to say <em>what it wants to happen</em>. The server is the
+          only place that says <em>how much</em> and <em>whether it's allowed</em>.
+        </p>
+      </section>
+
+      <section id="logger">
+        <span class="eyebrow section-kicker">09 — Developer tooling</span>
+        <h2>The AI debug bridge</h2>
+        <p>
+          A pair of systems, <code>SuperbulletServerLogger</code> and <code>SuperbulletClientLogger</code>,
+          exist purely to help while building the game inside Roblox Studio. They batch up logs and send them
+          over a WebSocket connection to the external SuperbulletAI desktop app — the same AI this framework
+          is designed to be operated by — so it can see what's happening without a human copy-pasting the
+          Output window. This bridge is Studio-only; it never ships in the real, published game.
+        </p>
+      </section>
+
+      <section id="map">
+        <span class="eyebrow section-kicker">10 — Orientation</span>
+        <h2>Folder map</h2>
+        <p>Where things live inside <code>framework/</code>, the project that Roblox Studio actually opens:</p>
+        <pre class="tree"><code>framework/
+├── src/
+│   ├── Behaviors/         <span class="note">tag-bound objects — e.g. PickupBehavior</span>
+│   ├── Bootstrap/         <span class="note">finds every Service/Controller/Behavior at startup</span>
+│   ├── Interface/         <span class="note">Vide UI components + UI Labs stories</span>
+│   ├── Mixins/            <span class="note">logic shared across unrelated Behaviors</span>
+│   ├── Profile/           <span class="note">player-data schema, service, controller</span>
+│   └── SuperbulletLogger/ <span class="note">Studio-only AI debug bridge</span>
+├── documentations/
+│   ├── codebase/          <span class="note">long-form reference docs</span>
+│   └── templates/         <span class="note">skeletons to copy for a new system</span>
+├── wally.toml             <span class="note">third-party Luau packages (Knit, Component, Signal, vide)</span>
+├── rokit.toml             <span class="note">pinned CLI tool versions</span>
+└── .rogen.json            <span class="note">source Rogen builds the Rojo project file from</span></code></pre>
+      </section>
+
+      <section id="tools">
+        <span class="eyebrow section-kicker">11 — The command line</span>
+        <h2>The toolchain, in plain English</h2>
+        <dl class="glossary">
+          <div><dt>Rojo</dt><dd>Turns the folders and files above into a real Roblox place, kept in sync with Studio as you edit.</dd></div>
+          <div><dt>Rogen</dt><dd>Generates Rojo's project file from a simpler config, so folder structure doesn't have to be edited by hand.</dd></div>
+          <div><dt>Wally</dt><dd>Downloads third-party Luau libraries this project depends on — comparable to npm for JavaScript.</dd></div>
+          <div><dt>rokit</dt><dd>Installs the exact same version of every command-line tool for everyone on the team.</dd></div>
+          <div><dt>selene</dt><dd>A linter — reads code without running it and flags likely mistakes.</dd></div>
+          <div><dt>lune</dt><dd>Runs Luau scripts standalone, outside of Roblox — used to check the communication matrix above.</dd></div>
+        </dl>
+      </section>
+
+      <section id="glossary">
+        <span class="eyebrow section-kicker">12 — Reference</span>
+        <h2>Glossary</h2>
+        <dl class="glossary">
+          <div><dt>Roblox</dt><dd>The game platform and engine this entire project builds on top of.</dd></div>
+          <div><dt>Luau</dt><dd>The programming language Roblox scripts are written in, a dialect of Lua.</dd></div>
+          <div><dt>Script</dt><dd>A single file of Luau code that Roblox runs.</dd></div>
+          <div><dt>Server / Client</dt><dd>The two realms every multiplayer Roblox game runs in — see the top of this page.</dd></div>
+          <div><dt>Service / Controller</dt><dd>Knit's names for a server-side / client-side system.</dd></div>
+          <div><dt>RemoteEvent</dt><dd>Roblox's mechanism for sending a message between server and client.</dd></div>
+          <div><dt>CollectionService</dt><dd>Roblox's built-in system for grouping objects under a shared Tag.</dd></div>
+          <div><dt>Tag</dt><dd>A plain-text label placed on an object in Studio, with no code required.</dd></div>
+          <div><dt>ProfileService</dt><dd>The library this project uses to save and load player data safely.</dd></div>
+          <div><dt>Exploiter</dt><dd>A player using modified software to read or rewrite their own client.</dd></div>
+          <div><dt>Linter</dt><dd>A tool that reads code for likely mistakes without running it.</dd></div>
+        </dl>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    Guide generated for SuperbulletFrameworkV1-Knit. For the exact, enforced rules behind each section, see
+    the files under <code>.claude/rules/</code> in the repository.
+  </footer>
+</div>
+</body>
+</html>
