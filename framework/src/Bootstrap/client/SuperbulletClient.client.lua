@@ -12,7 +12,7 @@ local Superbullet = require(SuperbulletModule)
 -- own Bootstrap folder.
 local playerScripts = Players.LocalPlayer:WaitForChild("PlayerScripts")
 for _, module in pairs(playerScripts:GetDescendants()) do
-	if module:IsA("ModuleScript") and module.Name:match("Controller$") then
+	if module:IsA("ModuleScript") and (module.Name:match("Controller$") or module.Name:match("Behavior$")) then
 		local ok, err = pcall(require, module)
 		if not ok then
 			task.spawn(error, "[Superbullet] Failed to load " .. module:GetFullName() .. ": " .. tostring(err))

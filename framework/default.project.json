@@ -7,6 +7,12 @@
 		"ReplicatedStorage": {
 			"$className": "ReplicatedStorage",
 			"$ignoreUnknownInstances": true,
+			"Mixins": {
+				"$ignoreUnknownInstances": false,
+				"$path": {
+					"optional": "src/Mixins/shared"
+				}
+			},
 			"Packages": {
 				"$path": "Packages"
 			},
@@ -27,6 +33,12 @@
 		"ServerScriptService": {
 			"$className": "ServerScriptService",
 			"$ignoreUnknownInstances": true,
+			"Behaviors": {
+				"$ignoreUnknownInstances": false,
+				"$path": {
+					"optional": "src/Behaviors/server"
+				}
+			},
 			"Bootstrap": {
 				"$ignoreUnknownInstances": false,
 				"$path": {
