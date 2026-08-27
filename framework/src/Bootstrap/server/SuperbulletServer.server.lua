@@ -1,8 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local SuperbulletModule = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Superbullet")
 local Superbullet = require(SuperbulletModule)
+local Lync = require(ReplicatedStorage.Packages.Lync)
 
 -- Feature-based layout: Services live under any feature's server/ folder
 -- (ServerScriptService.<Feature>.server.<...>), not under one fixed
@@ -25,6 +27,15 @@ end
 
 Superbullet.Start():andThen(
 	function()
+		-- Every feature's Net.luau was already required by the autoload above,
+		-- so every Lync.define already ran — start() can compile the namespaces.
+		Lync.start()
+		-- PostSimulation passes deltaTime — Connect(Lync.flush) directly would
+		-- forward it as the flush budget (in bytes), tripping the 1024 floor.
+		RunService.PostSimulation:Connect(function()
+			Lync.flush()
+		end)
+
 		print("Superbullet Server initiated.")
 		SuperbulletModule:SetAttribute("SuperbulletServer_Initialized",true)
 	end

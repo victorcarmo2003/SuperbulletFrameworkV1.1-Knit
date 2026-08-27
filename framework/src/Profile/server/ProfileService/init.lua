@@ -7,17 +7,6 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 
 local ProfileService = Superbullet.CreateService({
 	Name = "ProfileService",
-	Client = {
-		GetData = Superbullet.CreateSignal(),
-
-		--[[
-			@description Use this for client to reduce network receive data, this updates DataController.Data
-
-			Note: If you use :Connect() and want to retrieve updated data, ensure to add a task.wait()
-			at least for the DataController.Data to update.
-		]]
-		UpdateSpecificData = Superbullet.CreateSignal(),
-	},
 	Instance = script, -- Automatically initializes Components/Accessor.lua and Components/Mutator.lua
 
 	UpdateSpecificData = Signal.new(),
@@ -26,6 +15,7 @@ local ProfileService = Superbullet.CreateService({
 
 local ActualProfileStore = require(script.Parent:WaitForChild("Externals", 10):WaitForChild("ProfileStore", 10))
 local ProfileTemplate = require(ReplicatedStorage.Profile.ProfileTemplate)
+local Net = require(ReplicatedStorage.Profile.Net)
 
 local PlayerProfileStore
 
@@ -60,6 +50,10 @@ local function HandlePlayerAdded(player)
 
 		if player:IsDescendantOf(Players) then
 			ProfileService.Profiles[player] = profile
+
+			Net.Fields:add(player.UserId, { owner = player.UserId, profile = table.clone(profile.Data) })
+			Net.Fields:audience(player.UserId, player)
+
 			DataSuccessfullyLoaded(player)
 		else
 			-- Player left before the profile loaded
@@ -75,6 +69,7 @@ end
 local function HandlePlayerRemoving(player)
 	local profile = ProfileService.Profiles[player]
 	if profile ~= nil then
+		Net.Fields:remove(player.UserId)
 		profile:EndSession()
 	end
 end
@@ -139,11 +134,16 @@ function ProfileService:SuperbulletStart()
 	Players.PlayerAdded:Connect(HandlePlayerAdded)
 	Players.PlayerRemoving:Connect(HandlePlayerRemoving)
 
-	-- Handle client data requests
-	ProfileService.Client.GetData:Connect(function(player)
-		ProfileService:WaitUntilProfileLoaded(player)
-		local _, profileData = ProfileService:GetProfile(player)
-		ProfileService.Client.GetData:Fire(player, profileData)
+	-- Handle explicit client re-sync requests (the normal load path is
+	-- Net.Fields:add/audience above — this is only for an on-demand pull).
+	Net.RequestProfile:onServer(function(path, player)
+		-- GetProfile/Accessor.GetProfile already waits for the profile to load
+		-- if it hasn't yet — no need to wait a second time here.
+		local _, data = ProfileService:GetProfile(player)
+		if not data then
+			return nil
+		end
+		return ProfileService.Accessor.GetDataAtPath(data, path)
 	end)
 end
 

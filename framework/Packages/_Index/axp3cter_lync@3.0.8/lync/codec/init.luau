@@ -1,0 +1,40 @@
+--!strict
+--!optimize 2
+-- Every constructor a schema is written from, in one frozen table.
+
+local Composites = require (script.Composites)
+local Datatypes = require (script.Datatypes)
+local Scalars = require (script.Scalars)
+local Text = require (script.Text)
+
+local Codecs = {
+    bool = Scalars.bool,
+    int = Scalars.int,
+    quant = Scalars.quant,
+    angle = Scalars.angle,
+    f32 = Scalars.f32,
+    f64 = Scalars.f64,
+    vlq = Scalars.vlq,
+    vli = Scalars.vli,
+
+    str = Text.str,
+    buffer = Text.buffer,
+
+    struct = Composites.struct,
+    array = Composites.array,
+    map = Composites.map,
+    optional = Composites.optional,
+    tagged = Composites.tagged,
+    enum = Composites.enum,
+    bitfield = Composites.bitfield,
+    unknown = Composites.unknown,
+
+    vec2 = Datatypes.vec2,
+    vec3 = Datatypes.vec3,
+    cframe = Datatypes.cframe,
+    rotation = Datatypes.rotation,
+    color3 = Datatypes.color3,
+    inst = Datatypes.inst,
+}
+
+return table.freeze (Codecs)

@@ -1,5 +1,3 @@
-local ProfileTemplate = {
-
-}
+local ProfileTemplate = {}
 
 return ProfileTemplate

@@ -1,0 +1,391 @@
+--!strict
+--!native
+--!optimize 2
+-- One bit region, as the pair of closures that lay it down and take it back up.
+
+local Catalog = require (script.Parent.Parent.Parent.kernel.Catalog)
+local Ir = require (script.Parent.Parent.Ir)
+local Log = require (script.Parent.Parent.Parent.kernel.Log)
+local Serial = require (script.Parent.Parent.Serial)
+local Words = require (script.Parent.Parent.Words)
+
+local Word = {}
+
+-- Constants -----------------------------------------------------------
+
+-- The same two widths a frame header reads, a region and a header being one kind of bit run.
+const ONE = Words.ONE
+const PAIR = Words.PAIR
+
+-- Types ---------------------------------------------------------------
+
+-- The two halves of a region, and the array of indices they meet in.
+export type Pack = (b: buffer, pos: number, value: any, slots: { number }, holds: { any }) -> ()
+export type Unpack = (b: buffer, pos: number, into: any, slots: { number }, holds: { any }) -> any
+
+-- Public --------------------------------------------------------------
+
+-- A value the schema has no place for, refused in the words a caller wrote.
+function Word.refused (path: string, wanted: string, got: any): never
+    return Log.refuse (
+        Log.line (Catalog.TAG, { path = path, expected = wanted, got = tostring (got) })
+    )
+end
+
+--[[
+    The same refusal from a tag, which is what a composite carries in place of the words.
+
+    A leaf holds its own and a composite holds the numbers they were interned under, so the lookup
+    is the half that differs and this is where the two meet.
+]]
+function Word.refusedAt (
+    tag: Ir.Tag,
+    paths: Serial.Interner,
+    said: Serial.Interner,
+    got: any
+): never
+    return Word.refused (paths.texts[tag.pathId], said.texts[tag.expectId], got)
+end
+
+-- The pair, with every constant the region is laid out by read once and held.
+function Word.emit (of: Ir.Word, paths: Serial.Interner, expected: Serial.Interner): (Pack, Unpack)
+    local leaves = of.leaves
+    local joins = of.joins
+    local held = #leaves
+
+    -- Per leaf, in wire order.
+    local spans = table.create (held, 0)
+    local toIndex = table.create (held) :: { (number) -> number? }
+    --[[
+        The reading each leaf needs, and nothing at all for the leaves whose value is already the
+        index. Absence rather than a second array beside this one, since a decode then asks one
+        question where it used to ask two and the answer to the first was almost always no.
+    ]]
+    local fromIndex = table.create (held) :: { ((number) -> any)? }
+
+    -- The leaves that fill their bits, which no reading can carry off the grid.
+    local whole = table.create (held, false) :: { boolean }
+
+    for index, grid in leaves do
+        spans[index] = grid.span
+        toIndex[index] = grid.toIndex
+        fromIndex[index] = if grid.plain == true then nil else grid.fromIndex
+        whole[index] = grid.whole == true
+    end
+
+    -- The leaves that occupy no bits, which is every grid holding one value.
+    local empties: { number } = {}
+    for index = 1, held do
+        if spans[index] == 0 then table.insert (empties, index) end
+    end
+
+    -- Whether there are any, since a walk over none is one a decode takes for nothing.
+    local barren = #empties > 0
+
+    -- Per join, in the order the region reads its fields.
+    local reach = #joins
+    local starts = table.create (reach, 0)
+    local ends = table.create (reach, 0)
+    local keys = table.create (reach) :: { string? }
+    local inside = table.create (reach, 0)
+    local pulls = table.create (reach) :: { ((any, { number }, number) -> boolean)? }
+    local pushes = table.create (reach) :: { (({ number }, number) -> any)? }
+    local wheres = table.create (reach) :: { string }
+    local wanted = table.create (reach) :: { string }
+
+    for index, join in joins do
+        starts[index] = join.at
+        keys[index] = join.key
+        inside[index] = join.nest or 0
+        pulls[index] = join.pull
+        pushes[index] = join.push
+        wheres[index] = paths.texts[join.tag.pathId]
+        wanted[index] = expected.texts[join.tag.expectId]
+
+        --[[
+            The last leaf a bounds walk looks at, and one short of the first where every leaf of
+            the field fills its bits. A walk over nothing is then a loop declining to run, rather
+            than a question asked of every field on every frame to be told no.
+        ]]
+        local upto = join.at - 1
+        for leaf = join.at, join.at + join.count - 1 do
+            if whole[leaf] then continue end
+            upto = join.at + join.count - 1
+            break
+        end
+
+        ends[index] = upto
+    end
+
+    -- Per window, and then the parts of every window end to end.
+    local plan = of.plan
+    local windows = #plan
+    local width = table.create (windows, 0)
+    local where = table.create (windows, 0)
+    local first = table.create (windows, 0)
+    local last = table.create (windows, 0)
+
+    local slot: { number } = {}
+    local offset: { number } = {}
+    local span: { number } = {}
+    local shift: { number } = {}
+
+    --[[
+        Whether a piece is the whole of the reading it comes from. A field wide enough to straddle
+        two windows arrives as two pieces and each has to be cut out of it, and a field that fits
+        one is already the piece, so cutting it out asks for every bit it already has.
+    ]]
+    local direct: { boolean } = {}
+
+    for index, window in plan do
+        width[index] = window.bytes
+        where[index] = window.at
+        first[index] = #slot + 1
+
+        for _, part in window.parts do
+            table.insert (slot, part.field)
+            table.insert (offset, part.offset)
+            table.insert (span, part.width)
+            table.insert (shift, part.shift)
+            table.insert (
+                direct,
+                part.shift == 0 and bit32.lshift (1, part.width) - 1 >= spans[part.field]
+            )
+        end
+
+        last[index] = #slot
+    end
+
+    --[[
+        Whether every field of this word is its own whole reading and sits on the record itself.
+        Where that holds of one field it holds of all of them, so the two arrays saying so answer
+        the same both times, and a word that asks them once asks them a field fewer than it has.
+    ]]
+    local simple = true
+    for index = 1, reach do
+        if pulls[index] ~= nil or pushes[index] ~= nil or inside[index] ~= 0 then
+            simple = false
+            break
+        end
+    end
+
+    --[[
+        Every field to its index, then every window to its bytes. In that order rather than one
+        pass, because a field can straddle two windows and a window can hold pieces of fields that
+        are nowhere near each other in the record.
+    ]]
+    local function pack (b: buffer, pos: number, value: any, slots: { number }, held: { any })
+        if simple then
+            for index = 1, reach do
+                local key = keys[index]
+                local one = if key == nil then value else value[key]
+                local at = starts[index]
+                local made = toIndex[at] (one)
+                if made == nil then Word.refused (wheres[index], wanted[index], one) end
+
+                slots[at] = made :: number
+            end
+        else
+            for index = 1, reach do
+                local key = keys[index]
+
+                local within = inside[index]
+                local from = if within == 0 then value else held[within]
+
+                local one = if key == nil then from else from[key]
+                local pull = pulls[index]
+
+                if pull == nil then
+                    local at = starts[index]
+                    local made = toIndex[at] (one)
+                    if made == nil then Word.refused (wheres[index], wanted[index], one) end
+
+                    slots[at] = made :: number
+                    continue
+                end
+
+                if not pull (one, slots, starts[index]) then
+                    Word.refused (wheres[index], wanted[index], one)
+                end
+            end
+        end
+
+        for index = 1, windows do
+            local acc = 0
+            for part = first[index], last[index] do
+                local cell = slot[part]
+                local piece = if direct[part]
+                    then slots[cell]
+                    else bit32.extract (slots[cell], shift[part], span[part])
+
+                acc = bit32.bor (acc, bit32.lshift (piece, offset[part]))
+            end
+
+            local at = pos + where[index]
+            local bytes = width[index]
+            if bytes == ONE then
+                buffer.writeu8 (b, at, acc)
+            elseif bytes == PAIR then
+                buffer.writeu16 (b, at, acc)
+            else
+                buffer.writeu32 (b, at, acc)
+            end
+        end
+    end
+
+    --[[
+        Every window to its pieces, then every field to its value. A piece at no shift is written
+        rather than merged, because what is under it is whatever the last call through this region
+        left there, and a field that straddles two windows meets its low piece first.
+    ]]
+    local function unpack (b: buffer, pos: number, into: any, slots: { number }, held: { any }): any
+        if barren then
+            for _, leaf in empties do
+                slots[leaf] = 0
+            end
+        end
+
+        for index = 1, windows do
+            local at = pos + where[index]
+            local bytes = width[index]
+            local acc = if bytes == ONE
+                then buffer.readu8 (b, at)
+                elseif bytes == PAIR then buffer.readu16 (b, at)
+                else buffer.readu32 (b, at)
+
+            for part = first[index], last[index] do
+                local piece = bit32.extract (acc, offset[part], span[part])
+                local up = shift[part]
+                if up == 0 then
+                    slots[slot[part] ] = piece
+                    continue
+                end
+                slots[slot[part] ] = bit32.bor (slots[slot[part] ], bit32.lshift (piece, up))
+            end
+        end
+
+        local bare: any = nil
+
+        for index = 1, reach do
+            local at = starts[index]
+
+            for leaf = at, ends[index] do
+                if slots[leaf] <= spans[leaf] then continue end
+
+                -- Held back to here, since a decode that holds never has a tag to report.
+                local tag = joins[index].tag
+                Log.reject (Catalog.TAG, {
+                    pathId = tag.pathId,
+                    expectId = tag.expectId,
+                    got = slots[leaf],
+                })
+            end
+
+            local key = keys[index]
+
+            local one: any
+            if simple then
+                local reading = fromIndex[at]
+                one = if reading == nil then slots[at] else reading (slots[at])
+
+                if key == nil then
+                    bare = one
+                else
+                    into[key] = one
+                end
+                continue
+            end
+
+            local push = pushes[index]
+            if push ~= nil then
+                one = push (slots, at)
+            else
+                local reading = fromIndex[at]
+                one = if reading == nil then slots[at] else reading (slots[at])
+            end
+
+            if key == nil then
+                bare = one
+                continue
+            end
+
+            local within = inside[index]
+            local up = if within == 0 then into else held[within]
+            up[key] = one
+        end
+
+        return bare
+    end
+
+    --[[
+        One field in one window, which is what a bare number is and what every key and value of a
+        map are. The loops above walk arrays to find what is already known here, so the same work
+        is the reading, the bounds and the one write, with nothing looked up to reach them.
+    ]]
+    if
+        reach == 1
+        and windows == 1
+        and first[1] == last[1]
+        and pulls[1] == nil
+        and pushes[1] == nil
+        and direct[1]
+        and offset[1] == 0
+        and inside[1] == 0
+    then
+        local key = keys[1]
+        local cell = starts[1]
+        local edge = ends[1]
+        local reading = fromIndex[cell]
+        local writing = toIndex[cell]
+        local bound = spans[cell]
+        local said, want = wheres[1], wanted[1]
+        local seat, bytes = where[1], width[1]
+        local sign = joins[1].tag
+        local named, meant = sign.pathId, sign.expectId
+
+        local function only (b: buffer, pos: number, value: any, slots: { number }, _held: { any })
+            local one = if key == nil then value else value[key]
+            local made = writing (one)
+            if made == nil then Word.refused (said, want, one) end
+
+            local at = pos + seat
+            if bytes == ONE then
+                buffer.writeu8 (b, at, made :: number)
+            elseif bytes == PAIR then
+                buffer.writeu16 (b, at, made :: number)
+            else
+                buffer.writeu32 (b, at, made :: number)
+            end
+        end
+
+        local function sole (
+            b: buffer,
+            pos: number,
+            into: any,
+            slots: { number },
+            _held: { any }
+        ): any
+            local at = pos + seat
+            local raw = if bytes == ONE
+                then buffer.readu8 (b, at)
+                elseif bytes == PAIR then buffer.readu16 (b, at)
+                else buffer.readu32 (b, at)
+
+            if edge >= cell and raw > bound then
+                Log.reject (Catalog.TAG, { pathId = named, expectId = meant, got = raw })
+            end
+
+            local one = if reading == nil then raw else reading (raw)
+            if key == nil then return one end
+
+            into[key] = one
+            return nil
+        end
+
+        return only, sole
+    end
+
+    return pack, unpack
+end
+
+return table.freeze (Word)

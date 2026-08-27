@@ -37,6 +37,24 @@ function module.GetProfileAge(player)
 	return os.time() - profile.FirstSessionTime
 end
 
+--- Read-only walk of a profile data table by path, e.g. {"Settings", "MusicVolume"}.
+--- `path == nil` returns the whole table. Returns nil if any step along the way is absent.
+function module.GetDataAtPath(data, path)
+	if path == nil then
+		return data
+	end
+
+	local current = data
+	for i = 1, #path do
+		if current == nil then
+			return nil
+		end
+		current = current[path[i]]
+	end
+
+	return current
+end
+
 function module.Init()
 	ProfileService = Superbullet.GetService("ProfileService")
 end

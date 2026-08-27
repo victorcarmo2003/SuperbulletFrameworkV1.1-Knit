@@ -1,20 +1,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Superbullet = require(ReplicatedStorage.Packages.Superbullet)
+local Net = require(ReplicatedStorage.Profile.Net)
 
 local DataController = Superbullet.CreateController({
 	Name = "DataController",
 	Data = nil,
 })
 
----- Superbullet Services
-local ProfileService
-
 local DEFAULT_LOAD_TIMEOUT = 30 -- seconds
-
--- Updates that arrive before the first GetData response populates
--- DataController.Data get queued here and replayed once it loads, instead of
--- being silently dropped.
-local pendingUpdates = {}
 
 local function applyUpdate(redirectories, newValue)
 	local directData = DataController.Data
@@ -63,40 +56,36 @@ function DataController:WaitUntilProfileLoaded(timeoutSeconds)
 	return true
 end
 
+--- Explicit re-sync pull. Not the normal load path anymore (that's automatic
+--- via Net.Fields:onAdded/catchup below) — useful to force a refresh on demand.
 function DataController:RequestToUpdateData()
-	ProfileService.GetData:Fire()
+	local ok, data = Net.RequestProfile:request(nil)
+	if ok then
+		DataController.Data = data
+	end
+	return ok
 end
 
 function DataController:SuperbulletStart()
-	-- Connect listeners BEFORE requesting data, so an UpdateSpecificData fired
-	-- by the server right after join is never missed.
-	ProfileService.GetData:Connect(function(newData)
-		DataController.Data = newData
+	-- audience() on the server already restricts this Set to just this
+	-- player's own record, so there is no other id to filter out here.
+	-- Lync's own catchup covers late join / becoming ready after load, so
+	-- there's no manual pending-updates queue needed anymore.
+	Net.Fields:onAdded(function(_, record)
+		DataController.Data = record.profile
+	end)
 
-		if #pendingUpdates > 0 then
-			for _, update in ipairs(pendingUpdates) do
-				applyUpdate(update.redirectories, update.newValue)
-			end
-			pendingUpdates = {}
+	Net.Fields:onChanged(function(_, record)
+		DataController.Data = record.profile
+	end)
+
+	Net.KeyChanged:onClient(function(update)
+		if DataController.Data then
+			applyUpdate(update.path, update.value)
 		end
 	end)
 
-	ProfileService.UpdateSpecificData:Connect(function(redirectories, newValue)
-		if not DataController.Data then
-			-- First load hasn't landed yet — queue it instead of dropping it.
-			table.insert(pendingUpdates, { redirectories = redirectories, newValue = newValue })
-			return
-		end
-
-		applyUpdate(redirectories, newValue)
-	end)
-
-	DataController:RequestToUpdateData()
 	DataController:WaitUntilProfileLoaded()
-end
-
-function DataController:SuperbulletInit()
-	ProfileService = Superbullet.GetService("ProfileService")
 end
 
 return DataController

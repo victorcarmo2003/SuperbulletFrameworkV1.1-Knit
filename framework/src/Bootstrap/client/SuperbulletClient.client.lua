@@ -1,7 +1,9 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local SuperbulletModule = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Superbullet")
 local Superbullet = require(SuperbulletModule)
+local Lync = require(ReplicatedStorage.Packages.Lync)
 
 -- Feature-based layout: this script lives at StarterPlayerScripts.Bootstrap
 -- (one folder among several feature folders — Bootstrap, Profile,
@@ -22,6 +24,13 @@ end
 
 Superbullet.Start()
 	:andThen(function()
+	Lync.start()
+	-- PostSimulation passes deltaTime — Connect(Lync.flush) directly would
+	-- forward it as the flush budget (in bytes), tripping the 1024 floor.
+	RunService.PostSimulation:Connect(function()
+		Lync.flush()
+	end)
+
 	print("Superbullet Client initiated.")
 	SuperbulletModule:SetAttribute("SuperbulletClient_Initialized",true)
 end

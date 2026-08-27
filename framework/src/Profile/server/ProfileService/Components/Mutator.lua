@@ -5,6 +5,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Superbullet = require(ReplicatedStorage.Packages.Superbullet)
+local Net = require(ReplicatedStorage.Profile.Net)
 
 local module = {}
 
@@ -42,8 +43,10 @@ function module.ChangeData(player, redirectories, newValue)
 	-- Set the new value
 	directData[redirectories[#redirectories]] = newValue
 
-	-- Fire update signals
-	ProfileService.Client.UpdateSpecificData:Fire(player, redirectories, newValue)
+	-- Push granular (path-aware) update and resync the whole-profile record.
+	Net.KeyChanged:fireClient(player, { path = redirectories, value = newValue })
+	Net.Fields:update(player.UserId, { profile = table.clone(profileData) })
+
 	ProfileService.UpdateSpecificData:Fire(player, redirectories, newValue)
 end
 
